@@ -10,6 +10,7 @@ specifiers:
   eslint-config-next: 13.2.4
   eslint-plugin-import: ^2.27.5
   husky: ^8.0.3
+  nanoid: ^4.0.1
   next: 13.2.4
   next-auth: ^4.20.1
   postcss: ^8.4.21
@@ -38,6 +39,7 @@ devDependencies:
   autoprefixer: 10.4.14_postcss@8.4.21
   eslint-plugin-import: 2.27.5_eslint@8.36.0
   husky: 8.0.3
+  nanoid: 4.0.1
   postcss: 8.4.21
   prettier: 2.8.4
   prettier-plugin-tailwindcss: 0.2.4_prettier@2.8.4
@@ -2726,6 +2728,15 @@ packages:
       }
     engines: { node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1 }
     hasBin: true
+
+  /nanoid/4.0.1:
+    resolution:
+      {
+        integrity: sha512-udKGtCCUafD3nQtJg9wBhRP3KMbPglUsgV5JVsXhvyBs/oefqb4sqMEhKBBgqZncYowu58p1prsZQBYvAj/Gww==,
+      }
+    engines: { node: ^14 || ^16 || >=18 }
+    hasBin: true
+    dev: true
 
   /natural-compare/1.4.0:
     resolution:

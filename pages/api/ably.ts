@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Rest } from 'ably'
 import { getServerSession } from 'next-auth'
 
-import { authOptions } from './[...nextauth]'
+import { authOptions } from './auth/[...nextauth]'
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,7 +17,7 @@ export default async function handler(
 
   const { method } = req
   if (method === 'POST') {
-    const ably = new Rest({ key: process.env.ABLY_API_KEY })
+    const ably = new Rest({ key: process.env.ABLY_SECRET })
     ably.auth.createTokenRequest(
       { clientId: session.user.email || '' },
       null,
