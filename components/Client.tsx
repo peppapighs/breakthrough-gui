@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { useChannel, usePresence } from '@ably-labs/react-hooks'
+import { PyodideInterface } from 'pyodide'
 
 import classNames from '@/lib/classNames'
 import { BlackPawn, WhitePawn } from '@/svg/Pawn'
@@ -10,6 +11,7 @@ const [ROW, COL] = [6, 6]
 interface Props {
   gameId: string
   clientId: string
+  pyodide: PyodideInterface
 }
 
 const coord = (r: number, c: number) => r * COL + c
@@ -55,7 +57,7 @@ const getMovableSquare = (board: string[][], x: number) => {
   return movable
 }
 
-export default function Client({ gameId, clientId }: Props) {
+export default function Client({ gameId, clientId, pyodide }: Props) {
   const [board, setBoard] = useState([
     ['B', 'B', 'B', 'B', 'B', 'B'],
     ['B', 'B', 'B', 'B', 'B', 'B'],
@@ -169,6 +171,56 @@ export default function Client({ gameId, clientId }: Props) {
     })
   }
 
+  const botInput = useRef<HTMLInputElement>(null)
+  const [loadingBot, setLoadingBot] = useState(false)
+  const [botCode, setBotCode] = useState('')
+
+  const handleImportBot = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        if (e.target?.result) {
+          setBotCode(e.target.result.toString())
+        }
+        setLoadingBot(false)
+      }
+      setLoadingBot(true)
+      reader.readAsText(e.target.files[0])
+    }
+  }
+
+  const handleMakeBotMove = () => {
+    const runBot = async () => {
+      pyodide.setStdout({
+        batched(a) {
+          const output = JSON.parse(a.replace('(', '[').replace(')', ']'))
+          const [from, to] = [
+            turn === 'W'
+              ? (ROW - 1 - output[0][0]) * COL + output[0][1]
+              : output[0][0] * COL + output[0][1],
+            turn === 'W'
+              ? (ROW - 1 - output[1][0]) * COL + output[1][1]
+              : output[1][0] * COL + output[1][1],
+          ]
+          handleMove(from, to)
+        },
+      })
+      await pyodide.runPythonAsync(
+        botCode +
+          `
+if __name__ == '__main__':
+      print(PlayerAI().make_move(${JSON.stringify(
+        turn === 'B' ? board : flipBoard(board)
+      )}))
+      `
+      )
+      setLoadingBot(false)
+    }
+
+    setLoadingBot(true)
+    runBot()
+  }
+
   useEffect(() => {
     if (
       board[0].some((cell) => cell === 'W') ||
@@ -186,7 +238,7 @@ export default function Client({ gameId, clientId }: Props) {
   }, [board, turn])
 
   return (
-    <div className="flex flex-col items-center py-8 text-center">
+    <div className="flex flex-col items-center py-8">
       {displayedWinner ? (
         <h2 className="text-center text-2xl font-bold text-gray-900">
           Winner:{' '}
@@ -294,6 +346,35 @@ export default function Client({ gameId, clientId }: Props) {
             onClick={handleReset}
           >
             Reset
+          </button>
+        </div>
+        <div className="mt-3 flex gap-2 sm:gap-3">
+          <input
+            type="file"
+            accept=".py"
+            className="hidden"
+            ref={botInput}
+            onChange={handleImportBot}
+          />
+          <button
+            type="button"
+            className={classNames(
+              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+              loadingBot ? 'opacity-50' : ''
+            )}
+            onClick={() => botInput.current?.click()}
+          >
+            Import bot
+          </button>
+          <button
+            type="button"
+            className={classNames(
+              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+              loadingBot || botCode === '' ? 'opacity-50' : ''
+            )}
+            onClick={handleMakeBotMove}
+          >
+            Make bot move
           </button>
         </div>
       </div>
