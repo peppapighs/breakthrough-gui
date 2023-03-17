@@ -180,8 +180,10 @@ export default function Client({ gameId, clientId }: Props) {
       board.every((row) => row.every((cell) => cell !== 'W'))
     ) {
       setWinner('B')
+    } else {
+      setWinner(null)
     }
-  }, [board])
+  }, [board, turn])
 
   return (
     <div className="flex flex-col items-center py-8 text-center">
@@ -266,15 +268,23 @@ export default function Client({ gameId, clientId }: Props) {
         <div className="mt-3 grid w-full grid-cols-3 gap-2 sm:mt-6 sm:gap-3">
           <button
             type="button"
-            className="rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className={classNames(
+              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+              winner ? 'opacity-50' : ''
+            )}
             onClick={handleSwitchTurn}
+            disabled={!!winner}
           >
             Switch turn
           </button>
           <button
             type="button"
-            className="rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className={classNames(
+              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+              winner ? 'opacity-50' : ''
+            )}
             onClick={() => setBoardFlipped((flipped) => !flipped)}
+            disabled={!!winner}
           >
             Flip board
           </button>
