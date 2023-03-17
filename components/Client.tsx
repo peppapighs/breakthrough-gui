@@ -191,29 +191,33 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
 
   const handleMakeBotMove = () => {
     const runBot = async () => {
-      pyodide.setStdout({
-        batched(a) {
-          const output = JSON.parse(a.replace('(', '[').replace(')', ']'))
-          const [from, to] = [
-            turn === 'W'
-              ? (ROW - 1 - output[0][0]) * COL + output[0][1]
-              : output[0][0] * COL + output[0][1],
-            turn === 'W'
-              ? (ROW - 1 - output[1][0]) * COL + output[1][1]
-              : output[1][0] * COL + output[1][1],
-          ]
-          handleMove(from, to)
-        },
-      })
-      await pyodide.runPythonAsync(
-        botCode +
-          `
+      try {
+        pyodide.setStdout({
+          batched(a) {
+            const output = JSON.parse(a.replace('(', '[').replace(')', ']'))
+            const [from, to] = [
+              turn === 'W'
+                ? (ROW - 1 - output[0][0]) * COL + output[0][1]
+                : output[0][0] * COL + output[0][1],
+              turn === 'W'
+                ? (ROW - 1 - output[1][0]) * COL + output[1][1]
+                : output[1][0] * COL + output[1][1],
+            ]
+            handleMove(from, to)
+          },
+        })
+        await pyodide.runPythonAsync(
+          botCode +
+            `
 if __name__ == '__main__':
       print(PlayerAI().make_move(${JSON.stringify(
         turn === 'B' ? board : flipBoard(board)
       )}))
       `
-      )
+        )
+      } catch (e) {
+        console.error(e)
+      }
       setLoadingBot(false)
     }
 
