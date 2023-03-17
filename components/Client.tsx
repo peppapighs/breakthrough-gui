@@ -192,29 +192,41 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
   const handleMakeBotMove = () => {
     const runBot = async () => {
       try {
-        pyodide.setStdout({
-          batched(a) {
-            const output = JSON.parse(a.replace('(', '[').replace(')', ']'))
-            const [from, to] = [
-              turn === 'W'
-                ? (ROW - 1 - output[0][0]) * COL + output[0][1]
-                : output[0][0] * COL + output[0][1],
-              turn === 'W'
-                ? (ROW - 1 - output[1][0]) * COL + output[1][1]
-                : output[1][0] * COL + output[1][1],
-            ]
-            handleMove(from, to)
-          },
-        })
         await pyodide.runPythonAsync(
           botCode +
+            '\n' +
             `
+import os, sys
+
 if __name__ == '__main__':
-      print(PlayerAI().make_move(${JSON.stringify(
-        turn === 'B' ? board : flipBoard(board)
-      )}))
-      `
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+
+    try:
+        move = PlayerAI().make_move(${JSON.stringify(
+          turn === 'B' ? board : flipBoard(board)
+        )})
+        move = str(list(move))
+    except Exception as e:
+        pass
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+`
         )
+
+        const output = JSON.parse(pyodide.globals.get('move'))
+        const [from, to] = [
+          turn === 'W'
+            ? (ROW - 1 - output[0][0]) * COL + output[0][1]
+            : output[0][0] * COL + output[0][1],
+          turn === 'W'
+            ? (ROW - 1 - output[1][0]) * COL + output[1][1]
+            : output[1][0] * COL + output[1][1],
+        ]
+        handleMove(from, to)
       } catch (e) {
         console.error(e)
       }
