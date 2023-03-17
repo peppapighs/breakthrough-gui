@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import { Inter } from 'next/font/google'
 import { signOut, useSession } from 'next-auth/react'
 
+import Client from '@/components/Client'
 import { WhitePawn } from '@/svg/Pawn'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -52,11 +53,11 @@ export default function Game() {
               </a>
             </div>
           </nav>
-          {
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="py-8"></div>
-            </div>
-          }
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {id && session?.user?.email && (
+              <Client gameId={id.toString()} clientId={session.user.email} />
+            )}
+          </div>
         </div>
       </main>
     </>

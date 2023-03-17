@@ -22,6 +22,7 @@
     "typescript": "4.9.5"
   },
   "devDependencies": {
+    "@ably-labs/react-hooks": "^2.1.0",
     "autoprefixer": "^10.4.14",
     "eslint-plugin-import": "^2.27.5",
     "husky": "^8.0.3",
