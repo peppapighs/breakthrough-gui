@@ -280,7 +280,9 @@ if __name__ == '__main__':
                   )}
                   onClick={() => handlePawnClick(boardCoord(r, c))}
                   disabled={isDisabled(boardCoord(r, c))}
-                  draggable={!isDisabled(boardCoord(r, c))}
+                  draggable={
+                    !isDisabled(boardCoord(r, c)) && displayedTurn === cell
+                  }
                   onDragStart={() => {
                     setSelectedPawn(boardCoord(r, c))
                     setPossibleMoves(getMovableSquare(board, boardCoord(r, c)))
