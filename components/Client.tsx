@@ -204,6 +204,7 @@ if __name__ == '__main__':
     sys.stdout = open(os.devnull, 'w')
     sys.stderr = open(os.devnull, 'w')
 
+    move = None
     try:
         move = PlayerAI().make_move(${JSON.stringify(
           turn === 'B' ? board : flipBoard(board)
@@ -216,6 +217,10 @@ if __name__ == '__main__':
         sys.stderr = old_stderr
 `
         )
+
+        if (!pyodide.globals.get('move')) {
+          throw new Error('Failed to get move from bot')
+        }
 
         const output = JSON.parse(pyodide.globals.get('move'))
         const [from, to] = [
