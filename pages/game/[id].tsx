@@ -37,6 +37,10 @@ export default function Game() {
     <>
       <Head>
         <title>Breakthrough - Game</title>
+        <meta
+          name="description"
+          content="A frontend UI for CS2109S mini project - Breakthrough"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
