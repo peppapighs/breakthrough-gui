@@ -385,6 +385,7 @@ if __name__ == '__main__':
               'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
               loadingBot ? 'opacity-50' : ''
             )}
+            disabled={loadingBot}
             onClick={() => botInput.current?.click()}
           >
             Import bot
@@ -393,8 +394,9 @@ if __name__ == '__main__':
             type="button"
             className={classNames(
               'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
-              loadingBot || botCode === '' ? 'opacity-50' : ''
+              loadingBot || botCode === '' || !!winner ? 'opacity-50' : ''
             )}
+            disabled={loadingBot || botCode === '' || !!winner}
             onClick={handleMakeBotMove}
           >
             Make bot move
