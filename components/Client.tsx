@@ -344,8 +344,8 @@ if __name__ == '__main__':
           <button
             type="button"
             className={classNames(
-              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-              winner ? 'opacity-50' : ''
+              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+              winner ? 'opacity-50' : 'hover:bg-gray-50'
             )}
             onClick={handleSwitchTurn}
             disabled={!!winner}
@@ -355,8 +355,8 @@ if __name__ == '__main__':
           <button
             type="button"
             className={classNames(
-              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-              winner ? 'opacity-50' : ''
+              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+              winner ? 'opacity-50' : 'hover:bg-gray-50'
             )}
             onClick={() => setBoardFlipped((flipped) => !flipped)}
             disabled={!!winner}
@@ -382,8 +382,8 @@ if __name__ == '__main__':
           <button
             type="button"
             className={classNames(
-              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
-              loadingBot ? 'opacity-50' : ''
+              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+              loadingBot ? 'opacity-50' : 'hover:bg-indigo-500'
             )}
             disabled={loadingBot}
             onClick={() => botInput.current?.click()}
@@ -393,8 +393,10 @@ if __name__ == '__main__':
           <button
             type="button"
             className={classNames(
-              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
-              loadingBot || botCode === '' || !!winner ? 'opacity-50' : ''
+              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+              loadingBot || botCode === '' || !!winner
+                ? 'opacity-50'
+                : 'hover:bg-indigo-500'
             )}
             disabled={loadingBot || botCode === '' || !!winner}
             onClick={handleMakeBotMove}
