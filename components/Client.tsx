@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { useChannel, usePresence } from '@ably-labs/react-hooks'
 import { PyodideInterface } from 'pyodide'
@@ -28,10 +28,11 @@ const makeMove = (board: string[][], from: number, to: number) => {
   const [r1, c1] = [Math.floor(from / COL), from % COL]
   const [r2, c2] = [Math.floor(to / COL), to % COL]
 
-  board[r2][c2] = board[r1][c1]
-  board[r1][c1] = '_'
+  const newBoard = board.map((row) => [...row])
+  newBoard[r2][c2] = newBoard[r1][c1]
+  newBoard[r1][c1] = '_'
 
-  return board
+  return newBoard
 }
 
 const getMovableSquare = (board: string[][], x: number) => {
@@ -67,7 +68,20 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
     ['W', 'W', 'W', 'W', 'W', 'W'],
   ])
   const [turn, setTurn] = useState<'W' | 'B'>('W')
-  const [winner, setWinner] = useState<'W' | 'B' | null>(null)
+  const winner = useMemo(() => {
+    if (
+      board[0].some((cell) => cell === 'W') ||
+      board.every((row) => row.every((cell) => cell !== 'B'))
+    ) {
+      return 'W'
+    } else if (
+      board[ROW - 1].some((cell) => cell === 'B') ||
+      board.every((row) => row.every((cell) => cell !== 'W'))
+    ) {
+      return 'B'
+    }
+    return null
+  }, [board])
 
   const [channel] = useChannel(`breakthrough:game:${gameId}`, (message) => {
     if (message.clientId === clientId) {
@@ -137,13 +151,6 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
     })
   }
 
-  const handleSwitchTurn = () => {
-    const newTurn = turn === 'W' ? 'B' : 'W'
-    setTurn(newTurn)
-
-    channel.publish('move', { board, turn: newTurn })
-  }
-
   const handleReset = () => {
     setBoard([
       ['B', 'B', 'B', 'B', 'B', 'B'],
@@ -154,7 +161,6 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
       ['W', 'W', 'W', 'W', 'W', 'W'],
     ])
     setTurn('W')
-    setWinner(null)
     setSelectedPawn(null)
     setPossibleMoves([])
 
@@ -171,7 +177,6 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
     })
   }
 
-  const botInput = useRef<HTMLInputElement>(null)
   const [loadingBot, setLoadingBot] = useState(false)
   const [botCode, setBotCode] = useState('')
 
@@ -242,22 +247,6 @@ if __name__ == '__main__':
     runBot()
   }
 
-  useEffect(() => {
-    if (
-      board[0].some((cell) => cell === 'W') ||
-      board.every((row) => row.every((cell) => cell !== 'B'))
-    ) {
-      setWinner('W')
-    } else if (
-      board[ROW - 1].some((cell) => cell === 'B') ||
-      board.every((row) => row.every((cell) => cell !== 'W'))
-    ) {
-      setWinner('B')
-    } else {
-      setWinner(null)
-    }
-  }, [board, turn])
-
   return (
     <div className="flex flex-col items-center py-8">
       {displayedWinner ? (
@@ -291,7 +280,7 @@ if __name__ == '__main__':
                 <button
                   key={c}
                   className={classNames(
-                    'relative flex aspect-square items-center justify-center p-2 ring-inset ring-gray-200 sm:p-3',
+                    'relative flex aspect-square items-center justify-center p-2 ring-inset ring-gray-200',
                     isDisabled(boardCoord(r, c)) ? '' : 'hover:bg-gray-100',
                     selectedPawn !== boardCoord(r, c) ? '' : 'ring-4'
                   )}
@@ -326,13 +315,13 @@ if __name__ == '__main__':
                   <span className="sr-only">{cell}</span>
                   <div
                     className={classNames(
-                      'absolute rounded-full',
+                      'absolute z-10 rounded-full',
                       cell === '_'
-                        ? 'h-4 w-4 bg-gray-700'
-                        : 'inset-0 m-1 border-4 border-gray-700',
+                        ? 'h-4 w-4 bg-gray-200'
+                        : 'inset-0 m-1 border-4 border-gray-200',
                       possibleMoves.includes(boardCoord(r, c))
-                        ? 'opacity-30'
-                        : 'opacity-0'
+                        ? 'block'
+                        : 'hidden'
                     )}
                   ></div>
                 </button>
@@ -340,60 +329,41 @@ if __name__ == '__main__':
             </div>
           ))}
         </div>
-        <div className="mt-3 grid w-full grid-cols-3 gap-2 sm:mt-6 sm:gap-3">
+        <div className="mt-6 flex w-full gap-3">
           <button
             type="button"
             className={classNames(
-              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
-              winner ? 'opacity-50' : 'hover:bg-gray-50'
-            )}
-            onClick={handleSwitchTurn}
-            disabled={!!winner}
-          >
-            Switch turn
-          </button>
-          <button
-            type="button"
-            className={classNames(
-              'rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+              'flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
               winner ? 'opacity-50' : 'hover:bg-gray-50'
             )}
             onClick={() => setBoardFlipped((flipped) => !flipped)}
             disabled={!!winner}
           >
-            Flip board
+            Switch view
           </button>
           <button
             type="button"
-            className="rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className="flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
             onClick={handleReset}
           >
             Reset
           </button>
         </div>
-        <div className="mt-3 flex gap-2 sm:gap-3">
+        <div className="mt-3 grid grid-cols-3 gap-3">
           <input
             type="file"
             accept=".py"
-            className="hidden"
-            ref={botInput}
+            className={classNames(
+              'col-span-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 file:mx-1.5 file:rounded file:border-0 file:bg-indigo-600 file:py-1 file:px-2 file:text-sm file:font-semibold file:text-white placeholder:text-gray-400 sm:text-sm sm:leading-6',
+              loadingBot ? 'opacity-50' : 'file:hover:bg-indigo-500 '
+            )}
+            disabled={loadingBot}
             onChange={handleImportBot}
           />
           <button
             type="button"
             className={classNames(
-              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
-              loadingBot ? 'opacity-50' : 'hover:bg-indigo-500'
-            )}
-            disabled={loadingBot}
-            onClick={() => botInput.current?.click()}
-          >
-            Import bot
-          </button>
-          <button
-            type="button"
-            className={classNames(
-              'w-full rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+              'rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
               loadingBot || botCode === '' || !!winner
                 ? 'opacity-50'
                 : 'hover:bg-indigo-500'
@@ -401,7 +371,7 @@ if __name__ == '__main__':
             disabled={loadingBot || botCode === '' || !!winner}
             onClick={handleMakeBotMove}
           >
-            Make bot move
+            Bot move
           </button>
         </div>
       </div>
