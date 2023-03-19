@@ -14,10 +14,12 @@ interface Props {
 
 const coord = (r: number, c: number) => r * COL + c
 
-const flipBoard = (board: string[][]) => {
+const flipBoard = (board: string[][], keepColor?: boolean) => {
   return board
     .map((row) =>
-      row.map((cell) => (cell === 'B' ? 'W' : cell === 'W' ? 'B' : '_'))
+      row.map((cell) =>
+        keepColor ? cell : cell === 'B' ? 'W' : cell === 'W' ? 'B' : '_'
+      )
     )
     .reverse()
 }
@@ -98,15 +100,7 @@ export default function Client({ gameId, clientId }: Props) {
   const [possibleMoves, setPossibleMoves] = useState<number[]>([])
   const [boardFlipped, setBoardFlipped] = useState(false)
 
-  const displayedBoard = boardFlipped ? flipBoard(board) : board
-  const displayedTurn = boardFlipped ? (turn === 'W' ? 'B' : 'W') : turn
-  const displayedWinner = winner
-    ? boardFlipped
-      ? winner === 'W'
-        ? 'B'
-        : 'W'
-      : winner
-    : winner
+  const displayedBoard = boardFlipped ? flipBoard(board, true) : board
 
   const isDisabled = (x: number) => {
     if (winner || loadingBot) {
@@ -239,11 +233,11 @@ export default function Client({ gameId, clientId }: Props) {
 
   return (
     <div className="flex flex-col items-center py-8">
-      {displayedWinner ? (
+      {winner ? (
         <h2 className="text-center text-2xl font-bold text-gray-900">
           Winner:{' '}
           <span>
-            {displayedWinner === 'W' ? (
+            {winner === 'W' ? (
               <WhitePawn className="-mt-2 inline-block h-8 w-auto sm:h-10" />
             ) : (
               <BlackPawn className="-mt-2 inline-block h-8 w-auto sm:h-10" />
@@ -254,7 +248,7 @@ export default function Client({ gameId, clientId }: Props) {
         <h2 className="text-center text-2xl font-bold text-gray-900">
           Turn:{' '}
           <span>
-            {displayedTurn === 'W' ? (
+            {turn === 'W' ? (
               <WhitePawn className="-mt-2 inline-block h-8 w-auto sm:h-10" />
             ) : (
               <BlackPawn className="-mt-2 inline-block h-8 w-auto sm:h-10" />
@@ -276,9 +270,7 @@ export default function Client({ gameId, clientId }: Props) {
                   )}
                   onClick={() => handlePawnClick(boardCoord(r, c))}
                   disabled={isDisabled(boardCoord(r, c))}
-                  draggable={
-                    !isDisabled(boardCoord(r, c)) && displayedTurn === cell
-                  }
+                  draggable={!isDisabled(boardCoord(r, c)) && turn === cell}
                   onDragStart={() => {
                     setSelectedPawn(boardCoord(r, c))
                     setPossibleMoves(getMovableSquare(board, boardCoord(r, c)))
