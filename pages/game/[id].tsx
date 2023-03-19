@@ -9,7 +9,6 @@ import { signOut, useSession } from 'next-auth/react'
 
 import Client from '@/components/Client'
 import Loading from '@/components/Loading'
-import { usePyodide } from '@/hooks/usePyodide'
 import { WhitePawn } from '@/svg/Pawn'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -21,17 +20,11 @@ export default function Game() {
   } = useRouter()
   const { status, data: session } = useSession()
 
-  const { pyodide } = usePyodide()
-
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.replace('/')
     }
   }, [status, router])
-
-  if (!pyodide) {
-    return <Loading />
-  }
 
   return (
     <>
@@ -67,11 +60,7 @@ export default function Game() {
           </nav>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {id && session?.user?.email && (
-              <Client
-                gameId={id.toString()}
-                clientId={session.user.email}
-                pyodide={pyodide}
-              />
+              <Client gameId={id.toString()} clientId={session.user.email} />
             )}
           </div>
         </div>

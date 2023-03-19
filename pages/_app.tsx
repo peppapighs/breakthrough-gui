@@ -4,8 +4,6 @@ import type { AppProps } from 'next/app'
 import { configureAbly } from '@ably-labs/react-hooks'
 import { SessionProvider } from 'next-auth/react'
 
-import { PyodideProvider } from '@/hooks/usePyodide'
-
 configureAbly({
   authCallback: async (_, callback) => {
     try {
@@ -24,9 +22,7 @@ export default function App({
 }: AppProps) {
   return (
     <SessionProvider session={session}>
-      <PyodideProvider>
-        <Component {...pageProps} />
-      </PyodideProvider>
+      <Component {...pageProps} />
     </SessionProvider>
   )
 }

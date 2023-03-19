@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useChannel, usePresence } from '@ably-labs/react-hooks'
-import { PyodideInterface } from 'pyodide'
 
 import classNames from '@/lib/classNames'
 import { BlackPawn, WhitePawn } from '@/svg/Pawn'
@@ -11,7 +10,6 @@ const [ROW, COL] = [6, 6]
 interface Props {
   gameId: string
   clientId: string
-  pyodide: PyodideInterface
 }
 
 const coord = (r: number, c: number) => r * COL + c
@@ -58,7 +56,7 @@ const getMovableSquare = (board: string[][], x: number) => {
   return movable
 }
 
-export default function Client({ gameId, clientId, pyodide }: Props) {
+export default function Client({ gameId, clientId }: Props) {
   const [board, setBoard] = useState([
     ['B', 'B', 'B', 'B', 'B', 'B'],
     ['B', 'B', 'B', 'B', 'B', 'B'],
@@ -177,11 +175,12 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
     })
   }
 
+  const workerRef = useRef<Worker>()
   const [loadingBot, setLoadingBot] = useState(false)
   const [botCode, setBotCode] = useState('')
 
   const handleImportBot = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files[0]) {
       const reader = new FileReader()
       reader.onload = async (e) => {
         if (e.target?.result) {
@@ -191,43 +190,24 @@ export default function Client({ gameId, clientId, pyodide }: Props) {
       }
       setLoadingBot(true)
       reader.readAsText(e.target.files[0])
+    } else {
+      setBotCode('')
     }
   }
 
   const handleMakeBotMove = () => {
-    const runBot = async () => {
+    if (!workerRef.current) {
+      return
+    }
+
+    setLoadingBot(true)
+    workerRef.current.onmessage = (event: MessageEvent) => {
       try {
-        await pyodide.runPythonAsync(
-          botCode +
-            '\n' +
-            `
-import os, sys
-
-if __name__ == '__main__':
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    sys.stdout = open(os.devnull, 'w')
-    sys.stderr = open(os.devnull, 'w')
-
-    move = None
-    try:
-        move = PlayerAI().make_move(${JSON.stringify(
-          turn === 'B' ? board : flipBoard(board)
-        )})
-        move = str(list(move))
-    except Exception as e:
-        pass
-    finally:
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
-`
-        )
-
-        if (!pyodide.globals.get('move')) {
-          throw new Error('Failed to get move from bot')
+        const output = event.data.move
+        if (!output) {
+          throw new Error('Bot did not return a valid move')
         }
 
-        const output = JSON.parse(pyodide.globals.get('move'))
         const [from, to] = [
           turn === 'W'
             ? (ROW - 1 - output[0][0]) * COL + output[0][1]
@@ -242,10 +222,20 @@ if __name__ == '__main__':
       }
       setLoadingBot(false)
     }
-
-    setLoadingBot(true)
-    runBot()
+    workerRef.current.postMessage({
+      code: botCode,
+      board: turn === 'B' ? board : flipBoard(board),
+    })
   }
+
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL('@/workers/botWorker.ts', import.meta.url)
+    )
+    return () => {
+      workerRef.current?.terminate()
+    }
+  }, [])
 
   return (
     <div className="flex flex-col items-center py-8">
