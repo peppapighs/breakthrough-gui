@@ -109,7 +109,7 @@ export default function Client({ gameId, clientId }: Props) {
     : winner
 
   const isDisabled = (x: number) => {
-    if (winner) {
+    if (winner || loadingBot) {
       return true
     }
     const [r, c] = [Math.floor(x / COL), x % COL]
@@ -324,17 +324,21 @@ export default function Client({ gameId, clientId }: Props) {
             type="button"
             className={classNames(
               'flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
-              winner ? 'opacity-50' : 'hover:bg-gray-50'
+              loadingBot || winner ? 'opacity-50' : 'hover:bg-gray-50'
             )}
             onClick={() => setBoardFlipped((flipped) => !flipped)}
-            disabled={!!winner}
+            disabled={loadingBot || !!winner}
           >
             Switch view
           </button>
           <button
             type="button"
-            className="flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className={classNames(
+              'flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+              loadingBot ? 'opacity-50' : 'hover:bg-gray-50'
+            )}
             onClick={handleReset}
+            disabled={loadingBot}
           >
             Reset
           </button>
