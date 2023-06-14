@@ -1,38 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Breakthrough GUI
+
+A web application for testing Breakthrough 6x6 AI and competing with your friends.
 
 ## Getting Started
 
-First, run the development server:
+1. Create a copy of `.env.example` called `.env.local` and configuring each value as follows:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+   | Name              | Description                                                                                   |
+   | ----------------- | --------------------------------------------------------------------------------------------- |
+   | `NEXTAUTH_URL`    | Leave as `http://localhost:3000` for local development.                                       |
+   | `NEXTAUTH_SECRET` | A random string used for authentication. Run `openssl rand -base64 32` to generate a new one. |
+   | `GITHUB_ID`       | The client ID of your GitHub OAuth app.                                                       |
+   | `GITHUB_SECRET`   | The client secret of your GitHub OAuth app.                                                   |
+   | `ABLY_SECRET`     | The secret key of your Ably app.                                                              |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   For more information about NextAuth.js configuration, see [the documentation](https://next-auth.js.org/providers/github).
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+   ```bash
+   pnpm install
+   ```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+1. Start the development server:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   ```bash
+   pnpm dev
+   ```
 
-## Learn More
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The easiest way to deploy this application is to use [Vercel](https://vercel.com/).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Usage
 
-## Deploy on Vercel
+1. Sign in with your GitHub account.
+1. Create a new game.
+1. Share the game link with your friend.
+1. Click "Switch View" to invert the board.
+1. Click "Reset" to start a new game.
+1. Upload your AI as a Python file and click "Bot move" to make a move. Your Python file should contain `PlayerAI` class with a `make_move()` method accepting the board state and returning a move.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
