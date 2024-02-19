@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-import { useChannel, usePresence } from '@ably-labs/react-hooks'
+import { useChannel, usePresence } from 'ably/react'
 
 import classNames from '@/lib/classNames'
 import { BlackPawn, WhitePawn } from '@/svg/Pawn'
@@ -83,7 +83,7 @@ export default function Client({ gameId, clientId }: Props) {
     return null
   }, [board])
 
-  const [channel] = useChannel(`breakthrough:game:${gameId}`, (message) => {
+  const { channel } = useChannel(`breakthrough:game:${gameId}`, (message) => {
     if (message.clientId === clientId) {
       return
     }
@@ -315,7 +315,7 @@ export default function Client({ gameId, clientId }: Props) {
           <button
             type="button"
             className={classNames(
-              'flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+              'flex-1 rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
               loadingBot || winner ? 'opacity-50' : 'hover:bg-gray-50'
             )}
             onClick={() => setBoardFlipped((flipped) => !flipped)}
@@ -326,7 +326,7 @@ export default function Client({ gameId, clientId }: Props) {
           <button
             type="button"
             className={classNames(
-              'flex-1 rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+              'flex-1 rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
               loadingBot ? 'opacity-50' : 'hover:bg-gray-50'
             )}
             onClick={handleReset}
@@ -340,7 +340,7 @@ export default function Client({ gameId, clientId }: Props) {
             type="file"
             accept=".py"
             className={classNames(
-              'col-span-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 file:mx-1.5 file:rounded file:border-0 file:bg-indigo-600 file:py-1 file:px-2 file:text-sm file:font-semibold file:text-white placeholder:text-gray-400 sm:text-sm sm:leading-6',
+              'col-span-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 file:mx-1.5 file:rounded file:border-0 file:bg-indigo-600 file:px-2 file:py-1 file:text-sm file:font-semibold file:text-white placeholder:text-gray-400 sm:text-sm sm:leading-6',
               loadingBot ? 'opacity-50' : 'file:hover:bg-indigo-500 '
             )}
             disabled={loadingBot}
@@ -349,7 +349,7 @@ export default function Client({ gameId, clientId }: Props) {
           <button
             type="button"
             className={classNames(
-              'rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+              'rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
               loadingBot || botCode === '' || !!winner
                 ? 'opacity-50'
                 : 'hover:bg-indigo-500'
